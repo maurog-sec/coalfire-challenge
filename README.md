@@ -95,7 +95,7 @@ logs_bucket_name = "single-logs-bucket-name"
 ### Assumptions
 - The AMI specified by `var.redhat_ami` is correct and available in the selected region.
 - The `user_data` script correctly configures the EC2 instances for the application.
-- The application on the EC2 instances is configured to listen on port 443 (HTTPS).
+- The application on the EC2 instances is public-facing, and it's configured to listen on port 443 (HTTPS).
 - The S3 bucket names are unique and comply with AWS naming conventions.
 - The Terraform version used is compatible with all modules.
 
@@ -105,6 +105,34 @@ logs_bucket_name = "single-logs-bucket-name"
   - ALB: [terraform-aws-modules/alb/aws](https://registry.terraform.io/modules/terraform-aws-modules/alb/aws/8.0.0)
   - S3 Bucket: [terraform-aws-modules/s3-bucket/aws](https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/3.0.0)
 
-- **Documentación de AWS**:
- 
-- **AWS Terraform Modules**:
+## Prioritized Enhancement Plan
+
+| Priority | Enhancement | Description |
+|-----------|--------|-------------|
+| High | Security | Add an HTTPS listener to the ALB to encrypt client-ALB traffic. |
+| Medium | Monitoring and Logging | Configure CloudWatch alarms for the ASG and ALB. Enable logging for the ALB and EC2 instances to track requests and errors. |
+| Medium | Scalability | Define scaling policies for the ASG based on metrics such as CPU usage or network traffic. |
+| Low | Cost Optimization | Review instance types and sizes to optimize performance and cost. Consider Spot instances for outage-tolerant workloads. |
+| Low | Backups and Recovery | Implement regular backups for S3 buckets and EC2 volumes. Configure cross-region replication for S3 buckets if necessary. |
+| Low | Automation | Automate deployment with CI/CD tools such as Jenkins or GitHub Actions. Use Terraform workspaces for environments (dev, staging, prod). |
+
+## Operational Gap Analysis
+
+- **Security**:
+- The public security group allows SSH from any IP, which is a significant risk. It should be restricted to specific IPs.
+- No mention of encryption for data at rest or in transit beyond the HTTPS listener on the instances.
+- **Monitoring**:
+- There is no monitoring or alerting configuration in the provided code, which could lead to undetected issues.
+- **Backups**:
+- Although S3 buckets have lifecycle policies, there is no mention of backups for EC2 instances or other resources.
+- **Scalability**:
+- The ASG is configured, but no scaling policies were defined, which could require manual interventions.
+- **Documentation**:
+- The README should include more detailed instructions, such as how to access the application or manage S3 buckets.
+
+## Evidence of Successful Deployment
+- Screenshots of the AWS console showing the created resources (VPC, ALB, ASG, S3 buckets).
+- Output from `terraform apply` indicating successful resource creation.
+- CLI output or logs showing that the application is running and accessible through the ALB.
+
+## Solution Diagram
