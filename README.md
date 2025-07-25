@@ -2,23 +2,7 @@
 
 ## Solution Overview
 
-This exercise proposed by Coalfire deploys a secure, modular AWS environment using Terraform. It includes:
-
-- A single VPC (10.1.0.0/16) with 4 subnets across two Availability Zones  
-  - **Public**: 10.1.0.0/24, 10.1.1.0/24  
-  - **Private**: 10.1.2.0/24, 10.1.3.0/24  
-- One standalone EC2 (Red Hat, t2.micro, 20 GB) in a public subnet.  
-- An Auto Scaling Group (2–6 Red Hat t2.micro instances, 20 GB) in the private subnets, auto‑installing Apache.  
-- An Internet‑facing Application Load Balancer (HTTP → HTTPS)  
-- IAM Roles:  
-  - EC2s can write logs to the **logs** bucket  
-  - ASG hosts can read from the **images** bucket  
-- Two S3 buckets with lifecycle rules:  
-  - **images/**: `memes/` → transition to Glacier after 90 days; `archive/` for long‑term storage  
-  - **logs/**: `active/` → transition to Glacier after 90 days; `inactive/` → expire after 90 days  
-
-This project deploys a scalable infrastructure for a web application on AWS using Terraform. The main components include:
-
+This exercise proposed by Coalfire deploys a secure, scalable, and modular AWS infrastructure using Terraform. Below the components involved:
 - **VPC**: A Virtual Private Cloud with CIDR block 10.1.0.0/16, with two public and two private subnets in two availability zones for high availability. A NAT Gateway is included for internet access from private subnets.
 - **EC2 Instances**:
 - A standalone EC2 instance in a public subnet, possibly for testing or specific services.
@@ -69,7 +53,7 @@ logs_bucket_name = "single-logs-bucket-name"
 7. **Verify the Deployment**:
 - Verify the created resources in the AWS console or using the AWS CLI.
 
-- Access the ALB's DNS name to confirm that the application is running.
+- Access the ALB's DNS name (to be defined) to confirm that the application is running.
 
 ## Design Decisions and Assumptions
 
@@ -93,23 +77,25 @@ logs_bucket_name = "single-logs-bucket-name"
   - The private security group allows HTTPS only from the ALB, ensuring that the instances are not directly accessible.
 
 ### Assumptions
-- The AMI specified by `var.redhat_ami` is correct and available in the selected region.
+- The AWS account doesn't exist, so the user will have to provide a valid account-id.
+- The user knows the AMI ID for `var.redhat_ami`.
 - The `user_data` script correctly configures the EC2 instances for the application.
 - The application on the EC2 instances is public-facing, and it's configured to listen on port 443 (HTTPS).
-- The S3 bucket names are unique and comply with AWS naming conventions.
+- The S3 bucket names will be unique and comply with AWS naming conventions.
 - The Terraform version used is compatible with all modules.
+- There are some errors in the `terraform plan` due to I don't have an AWS account.
 
 ## References to Resources Used
-  - VPC: [terraform-aws-modules/vpc/aws](https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/5.0.0)
-  - Autoscaling: [terraform-aws-modules/autoscaling/aws](https://registry.terraform.io/modules/terraform-aws-modules/autoscaling/aws/9.0.0)
-  - ALB: [terraform-aws-modules/alb/aws](https://registry.terraform.io/modules/terraform-aws-modules/alb/aws/8.0.0)
-  - S3 Bucket: [terraform-aws-modules/s3-bucket/aws](https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/3.0.0)
+  - VPC: [terraform-aws-modules/vpc/aws](https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/latest)
+  - Autoscaling: [terraform-aws-modules/autoscaling/aws](https://registry.terraform.io/modules/terraform-aws-modules/autoscaling/aws/latest)
+  - ALB: [terraform-aws-modules/alb/aws](https://registry.terraform.io/modules/terraform-aws-modules/alb/aws/latest)
+  - S3 Bucket: [terraform-aws-modules/s3-bucket/aws](https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest)
 
 ## Prioritized Enhancement Plan
 
 | Priority | Enhancement | Description |
 |-----------|--------|-------------|
-| High | Security | Add an HTTPS listener to the ALB to encrypt client-ALB traffic. |
+| High | Security | Apply KMS encryption for all resources. |
 | Medium | Monitoring and Logging | Configure CloudWatch alarms for the ASG and ALB. Enable logging for the ALB and EC2 instances to track requests and errors. |
 | Medium | Scalability | Define scaling policies for the ASG based on metrics such as CPU usage or network traffic. |
 | Low | Cost Optimization | Review instance types and sizes to optimize performance and cost. Consider Spot instances for outage-tolerant workloads. |
@@ -119,7 +105,6 @@ logs_bucket_name = "single-logs-bucket-name"
 ## Operational Gap Analysis
 
 - **Security**:
-- The public security group allows SSH from any IP, which is a significant risk. It should be restricted to specific IPs.
 - No mention of encryption for data at rest or in transit beyond the HTTPS listener on the instances.
 - **Monitoring**:
 - There is no monitoring or alerting configuration in the provided code, which could lead to undetected issues.
@@ -131,8 +116,8 @@ logs_bucket_name = "single-logs-bucket-name"
 - The README should include more detailed instructions, such as how to access the application or manage S3 buckets.
 
 ## Evidence of Successful Deployment
-- Screenshots of the AWS console showing the created resources (VPC, ALB, ASG, S3 buckets).
-- Output from `terraform apply` indicating successful resource creation.
-- CLI output or logs showing that the application is running and accessible through the ALB.
+! [Running TF Init](Evidences/tf-init.JPG)
+! [Running TF Plan](Evidences/tf-plan.JPG)
+
 
 ## Solution Diagram
