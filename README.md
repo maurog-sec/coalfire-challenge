@@ -12,8 +12,8 @@ This exercise proposed by Coalfire deploys a secure, scalable, and modular AWS i
 - An image bucket with a lifecycle rule that transitions objects with the "memes/" prefix to GLACIER after 90 days.
 - A log bucket with lifecycle rules that transition the "active/" prefix to GLACIER after 90 days and expire the "inactive/" prefix after 90 days.
 - **Security Groups**:
-- Public group: Allows SSH (port 22) and HTTP (port 80) from any IP address.
-- ALB group: Allows HTTP from any IP address.
+- Public group: Allows SSH (port 22) from user-defined IPs, and HTTP (port 80) from any IP address.
+- ALB group: Allows HTTP from any IP address, but it forwards to HTTPS.
 - Private group: Allows HTTPS only from the ALB security group.
 
 This architecture ensures that the web application is accessible through the ALB, with protected instances in private subnets, accessible only through the load balancer.
@@ -23,7 +23,7 @@ This architecture ensures that the web application is accessible through the ALB
 To deploy this infrastructure, follow these steps:
 
 1. **Prerequisites**:
-- Install Terraform (version compatible with the modules, e.g., Terraform v1.0.0 or higher).
+- Install Terraform (version compatible with the modules).
 - Set up an AWS account with permissions to create VPC, EC2, ALB, S3, and other resources.
 - Set up AWS credentials on your machine or use an IAM role with appropriate permissions.
 
@@ -33,12 +33,12 @@ To deploy this infrastructure, follow these steps:
 git clone github.com/maurog-sec/coalfire-challenge.git
 ```
 3. **Configure Variables**:
-- Create a `terraform.tfvars` file and define the necessary variables, such as:
+- If you want to define specific values for the variables by default, you would have to create the `terraform.tfvars` file and define the necessary variables, such as:
 ```hcl
-aws_region = "us-west-2"
-redhat_ami = "ami-xxxxxxxxxxxxxxxxxx"
-images_bucket_name = "single-images-bucket-name"
-logs_bucket_name = "single-logs-bucket-name"
+allowed_ips = "1.2.3.4"
+redhat_ami = "ami-xxxxxxxxxxx"
+images_bucket_name = "coalfire-images"
+logs_bucket_name = "coalfire-logs"
 ```
 
 4. **Initialize Terraform**:
@@ -72,18 +72,18 @@ logs_bucket_name = "single-logs-bucket-name"
 - **S3 Buckets**:
   - Lifecycle policies have been implemented to move rarely accessed data to GLACIER and expire old logs, optimizing costs.
 - **Security**:
-  - The public security group allows SSH and HTTP from any IP, which is a potential risk. It is recommended to restrict it to specific IP ranges.
+  - The public security group allows HTTP from any IP, which is a potential risk. It is recommended to restrict it to specific IP ranges.
   - The ALB security group allows HTTP from any IP, standard for public load balancers.
   - The private security group allows HTTPS only from the ALB, ensuring that the instances are not directly accessible.
 
 ### Assumptions
-- The AWS account doesn't exist, so the user will have to provide a valid account-id.
+- The AWS account provided doesn't exist, so the user will have to provide a valid account-id.
 - The user knows the AMI ID for `var.redhat_ami`.
-- The `user_data` script correctly configures the EC2 instances for the application.
+- The `user_data` script configures Apache on the EC2 instances.
 - The application on the EC2 instances is public-facing, and it's configured to listen on port 443 (HTTPS).
 - The S3 bucket names will be unique and comply with AWS naming conventions.
 - The Terraform version used is compatible with all modules.
-- There are some errors in the `terraform plan` due to I don't have an AWS account.
+- There is a few errors in the `terraform plan` due to I don't have an AWS account.
 
 ## References to Resources Used
   - VPC: [terraform-aws-modules/vpc/aws](https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/latest)
@@ -116,8 +116,9 @@ logs_bucket_name = "single-logs-bucket-name"
 - The README should include more detailed instructions, such as how to access the application or manage S3 buckets.
 
 ## Evidence of Successful Deployment
-! [Running TF Init](Evidences/tf-init.JPG)
-! [Running TF Plan](Evidences/tf-plan.JPG)
+! [Running TF Init](evidences/tf-init.JPG)
+! [Running TF Plan](evidences/tf-plan.JPG)
 
 
 ## Solution Diagram
+TODO
