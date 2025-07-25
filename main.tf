@@ -19,7 +19,7 @@ module "vpc" {
   name = "coalfire-vpc"
   cidr = "10.1.0.0/16"
 
-  azs             = slice(data.aws_availability_zones.available.names, 0, 2)
+  azs             = var.availability_zones
   public_subnets  = ["10.1.0.0/24", "10.1.1.0/24"]
   private_subnets = ["10.1.2.0/24", "10.1.3.0/24"]
 
@@ -204,7 +204,7 @@ resource "aws_security_group" "private_sg" {
  
 resource "aws_security_group" "public_sg" {
   name        = "public-sg"
-  description = "Allow HTTP and SSH from anywhere"
+  description = "Allow HTTP and SSH"
   vpc_id      = module.vpc.vpc_id
 
   ingress {

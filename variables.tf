@@ -29,3 +29,9 @@ variable "account_id" {
   type        = string
   default     = "123456789012"
 }
+
+variable "availability_zones" {
+  description = "AZs list for testing purpose"
+  type        = list(string)
+  default     = ["us-east-1a","us-east-1b"]
+}
